@@ -1,103 +1,150 @@
 #include <iostream>
+#include <vector>
 
 using namespace std;
+class Matrix{
+    private:
+        int rows;
+        int cols;
+        vector<vector<int>> data;
 
+    public:
+        Matrix(int rows, int cols): rows(rows), cols(cols), data(rows, vector<int>(cols)) {}
 
-class Vector{
-    friend Matrix;
-
-private:
-    int size;
-    int* elements;
-
-public:
-
-    Vector(const int* elems, int sz) {
-        size = sz;
-        elements = new int[size];
-        for (int i = 0; i < size; i++) {
-            elements[i] = elems[i];
-        }
-    }
-
-    Vector operator+(const Vector & other) const{
-        if (size == other.size) {
-            int* result = new int[size];
-            for (int i = 0; i < size; i++)
-                result[i] = elements[i] + other.elements[i];
-
-        return {result, size};
-        } else{
-            throw runtime_error("Error");
-        }
-    };
-
-    Vector operator-(const Vector& other) const {
-        if (size == other.size) {
-            int* result = new int[size];
-            for (int i = 0; i < size; i++) {
-                result[i] = elements[i] - other.elements[i];
+        void setElement(int row, int col, int value) {
+            if (row < 0 || row >= rows || col < 0 || col >= cols) {
+                cout << "Invalid index" << endl;
+                return;
             }
-            return {result, size};
-        } else{
-            throw runtime_error("Error");
+            data[row][col] = value;
         }
-    }
 
-    int operator*(const Vector & other) const{
-        int result = 0;
-        if (size == other.size) {
-            for (int i = 0; i < size; i++) {
-                result += (elements[i] * other.elements[i]);
+        void fill() {
+            int n;
+            for (int i = 0; i < rows; i++) {
+                for (int j = 0; j < cols; j++) {
+                    cout << "Row: " << i+1 << " Col: " << j+1 << ": ";
+                    cin >> n;
+                    setElement(i, j, n);
+                }
             }
-        } else{
-            throw runtime_error("Error");
         }
+
+        int getElement(int row, int col){
+            if (row < 0 || row >= rows || col < 0 || col >= cols) {
+                cout << "Invalid index" << endl;
+                return 0;
+            }
+            return data[row][col];
+        }
+
+        Matrix operator+(const Matrix& other) const{
+            if (rows != other.rows || cols != other.cols) {
+                cout << "Invalid sizes" << endl;
+                return Matrix(0,0);
+            }
+
+            Matrix result(rows, cols);
+
+
+            for(int i = 0; i < rows; i++) {
+                for(int j = 0; j < cols; j++) {
+                    result.data[i][j] = data[i][j] + other.data[i][j];
+                }
+            }
+
+            return result;
+        }
+
+    Matrix operator-(const Matrix& other) const {
+        if (rows != other.rows || cols != other.cols) {
+            cout << "Invalid sizes" << endl;
+            return Matrix(0, 0);
+        }
+
+        Matrix result(rows, cols);
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                result.data[i][j] = data[i][j] - other.data[i][j];
+            }
+        }
+
         return result;
-    };
+    }
 
-    Vector operator*(const Matrix & other) const{
-        int* result = new int[size];
-        if (size == other.columns()) {
-            for (int i = 0; i < size; i++) {
-                int sum = 0;
-                for (int j = 0; j < other.rows(); j++)
-                    sum += other.elements()[i][j];
-                result += (elements[i] * sum);
-            }
-        } else if (size == other.rows()) {
-            for (int i = 0; i < size; i++) {
-                int sum = 0;
-                for (int j = 0; j < other.columns(); j++)
-                    sum += other.elements()[i][j];
-                result += (elements[i] * sum);
+    Matrix operator*(const Matrix& other) const {
+        if (cols != other.rows) {
+            cout << "Invalid sizes for matrix multiplication" << endl;
+            return Matrix(0, 0);
+        }
+
+        Matrix result(rows, other.cols);
+
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < other.cols; j++) {
+                for (int k = 0; k < cols; k++) {
+                    result.data[i][j] += data[i][k] * other.data[k][j];
+                }
             }
         }
-        return {result, size};
-    };
 
-    Vector operator*(const int& num){
-        int* result = new int[size];
-        for(int i =0; i < size; i++){
-            result[i] = elements[i]*num;
-        }
-        return {result, size};
-    }
-    Vector operator/(const int& num) const {
-        if (num == 0) {
-            throw runtime_error("Error");
-        }
-        int* result = new int[size];
-        for (int i = 0; i < size; i++) {
-            result[i] = elements[i] / num;
-        }
-        return {result, size};
+        return result;
     }
 
-    void PrintVector(){
-        for (int i = 0; i < size; i++) {
-            cout << elements[i] << " ";
-        }
-        cout << endl;
-    }
-};
+        void print() {
+            for(int i = 0; i < rows; i++) {
+                for (int j = 0; j < cols; j++) {
+                    cout << data[i][j] << " ";
+                }
+                cout << endl;
+                }
+            }
+        };
+
+
+int main() {
+    int rows, cols;
+    cout << "Rows: "; cin >> rows;
+    cout << endl;
+    cout << "Cols: "; cin >> cols;
+    cout << endl;
+
+    Matrix matrix1(rows, rows);
+    matrix1.fill();
+
+    cout << endl;
+
+    cout << "Matrix1:" << endl;
+    matrix1.print();
+    cout << endl;
+
+    int rows2, cols2;
+    cout << "Rows: "; cin >> rows2;
+    cout << endl;
+    cout << "Cols: "; cin >> cols2;
+    cout << endl;
+
+    Matrix matrix2(rows2, cols2);
+    matrix2.fill();
+
+    cout << endl;
+
+    cout << "Matrix2:" << endl;
+    matrix2.print();
+    cout << endl;
+
+    Matrix sum = matrix1 + matrix2;
+    cout << "Matrix sum:" << endl;
+    sum.print();
+
+    Matrix minus = matrix1 - matrix2;
+    cout << "Matrix minus:" << endl;
+    minus.print();
+
+    Matrix product = matrix1 * matrix2;
+    cout << "Matrix product:" << endl;
+    product.print();
+
+
+}
